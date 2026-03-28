@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a0f14" />
+    <title>DiVa — Divy & Purva</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-gradient" aria-hidden="true"></div>
+    <div class="hearts" aria-hidden="true"></div>
+
+    <div class="wrap">
+      <div id="error" class="err-banner" role="alert" hidden></div>
+
+      <!-- Landing -->
+      <section id="view-landing" class="view view-landing" hidden>
+        <header class="landing-header">
+          <p class="landing-eyebrow">Our little corner</p>
+          <h1 class="monogram" aria-label="DiVa">DiVa</h1>
+          <p class="landing-tagline" aria-label="Divy loves Purva">
+            <span class="name-highlight">Di</span>vy
+            <span class="tagline-heart" aria-hidden="true"> ♥ </span>
+            Pur<span class="name-highlight">va</span>
+          </p>
+          <p class="landing-hint">Tap your name to open your portal.</p>
+        </header>
+
+        <div class="avatar-grid">
+          <a href="#divy" class="avatar-card avatar-card--divy">
+            <span class="avatar-ring" aria-hidden="true"></span>
+            <span class="avatar-icon" aria-hidden="true">
+              <svg viewBox="0 0 100 100" class="icon-svg icon-male" focusable="false">
+                <circle cx="50" cy="32" r="14" fill="currentColor" opacity="0.9" />
+                <path
+                  d="M28 95V58c0-8 9-14 22-14s22 6 22 14v37"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span class="avatar-name">Divy</span>
+          </a>
+
+          <a href="#purva" class="avatar-card avatar-card--purva">
+            <span class="avatar-ring" aria-hidden="true"></span>
+            <span class="avatar-icon" aria-hidden="true">
+              <svg viewBox="0 0 100 100" class="icon-svg icon-female" focusable="false">
+                <circle cx="50" cy="30" r="13" fill="currentColor" opacity="0.9" />
+                <path
+                  d="M50 45c-14 0-24 8-24 20v30M50 45c14 0 24 8 24 20v30M50 62 L50 95"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M35 52 Q50 62 65 52" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="avatar-name">Purva</span>
+          </a>
+        </div>
+
+      </section>
+
+      <!-- Person portal -->
+      <section id="view-portal" class="view view-portal" hidden>
+        <header class="portal-top">
+          <a href="#" class="back-link" id="portal-back">← DiVa home</a>
+          <h2 id="portal-title" class="portal-title"></h2>
+          <p id="portal-sub" class="portal-sub"></p>
+        </header>
+
+        <article class="card portal-card">
+          <div class="card-head portal-spark-row">
+            <div class="spark">
+              <span class="pct" id="portal-pct">—</span>
+              <span class="lbl">love meter (playful)</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-meter" aria-expanded="false">
+              Update meter
+            </button>
+          </div>
+
+          <div id="panel-meter" class="edit-panel" hidden>
+            <p class="panel-intro">Set today’s feeling and optional note — adds a point on the chart.</p>
+            <div class="form-row">
+              <label class="form-label" for="input-current-pct">Love meter (any number you like)</label>
+              <input type="number" id="input-current-pct" step="any" class="input" placeholder="e.g. 88, 100, 142" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="input-today-label">Milestone / note (optional)</label>
+              <input type="text" id="input-today-label" class="input" placeholder="e.g. Best date night" />
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-save-today">Save for today</button>
+
+            <hr class="divider" />
+
+            <p class="panel-intro">Add a point for any past date.</p>
+            <div class="form-row form-row--2">
+              <div>
+                <label class="form-label" for="input-pt-date">Date</label>
+                <input type="date" id="input-pt-date" class="input" />
+              </div>
+              <div>
+                <label class="form-label" for="input-pt-pct">Value</label>
+                <input type="number" id="input-pt-pct" step="any" class="input" placeholder="Any number" />
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="input-pt-label">Milestone label</label>
+              <input type="text" id="input-pt-label" class="input" placeholder="What happened?" />
+            </div>
+            <button type="button" class="btn btn-secondary" id="btn-add-point">Add milestone</button>
+
+            <div class="history-manage">
+              <h4 class="history-manage-title">Last 30 days on chart</h4>
+              <ul id="history-list" class="history-list"></ul>
+            </div>
+          </div>
+
+          <div class="chart-section-head">
+            <h3 class="section-title">Last month</h3>
+            <p class="section-sub">Past 30 days · smooth line · gold-ring dots = milestones</p>
+          </div>
+          <div class="chart-wrap chart-wrap--tall">
+            <p id="chart-empty" class="chart-empty" hidden>No love % points in the last 30 days yet. Add one below.</p>
+            <canvas id="portal-chart" aria-label="Love percent last 30 days"></canvas>
+          </div>
+
+          <div class="card-head bucket-section-head">
+            <h3 class="section-title">Buckets</h3>
+            <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-buckets" aria-expanded="false">
+              Edit lists
+            </button>
+          </div>
+          <div id="buckets-display" class="buckets"></div>
+          <div id="buckets-edit" class="buckets-edit" hidden></div>
+
+          <div class="log-section">
+            <div class="log-head">
+              <h4>Bucket changes</h4>
+              <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-log" aria-expanded="false">
+                Add note
+              </button>
+            </div>
+            <div id="panel-log" class="edit-panel edit-panel--compact" hidden>
+              <div class="form-row">
+                <label class="form-label" for="input-log-date">Date</label>
+                <input type="date" id="input-log-date" class="input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="input-log-text">What shifted?</label>
+                <textarea id="input-log-text" class="input input-textarea" rows="2" placeholder="e.g. Moved X from hate → tolerate"></textarea>
+              </div>
+              <button type="button" class="btn btn-primary" id="btn-add-log">Save note</button>
+            </div>
+            <div class="log-list" id="portal-log"></div>
+          </div>
+        </article>
+      </section>
+
+      <footer class="site-footer">Made with <span class="footer-heart" aria-label="love">♥</span> by your Jaan.</footer>
+    </div>
+  </body>
+</html>
