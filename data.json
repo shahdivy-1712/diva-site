@@ -5,71 +5,44 @@
       "id": "divy",
       "displayName": "Divy",
       "subtitle": "How Purva sees Divy’s love meter",
-      "currentPercent": 88,
-      "chartNote": "Edit data.json to add dated points. Big jumps show as milestone callouts.",
+      "currentPercent": 150,
       "history": [
-        { "date": "2025-11-01", "percent": 72, "label": "Start of chart" },
-        { "date": "2025-12-24", "percent": 80, "label": "First holiday together" },
-        { "date": "2026-02-14", "percent": 85, "label": "Valentine’s" },
-        { "date": "2026-03-09", "percent": 100, "label": "Love spike — big conversation / milestone" },
-        { "date": "2026-03-20", "percent": 90, "label": "Settled back after busy week" },
-        { "date": "2026-03-29", "percent": 88, "label": "Today" }
+        { "date": "2026-02-27", "percent": 80, "label": "Love Began here" },
+        { "date": "2026-03-07", "percent": 85, "label": "The Love Reveal" },
+        { "date": "2026-03-08", "percent": 90, "label": "Where words become us" },
+        { "date": "2026-03-09", "percent": 95, "label": "Jaan Moment" },
+        { "date": "2026-03-20", "percent": 100, "label": "First Forever Moment" },
+        { "date": "2026-03-21", "percent": 120, "label": "Building Our Memories." },
+        { "date": "2026-03-22", "percent": 120, "label": "Emotional See you Soon" },
+        { "date": "2026-03-25", "percent": 150, "label": "Love became Sure" }
       ],
       "buckets": {
         "love": [
-          "How you check in when I’m stressed",
-          "Inside jokes",
-          "Planning our future honestly"
+          "Her consistency and efforts",
+          "Her caring, supporting, and understanding nature",
+          "Way she makes me feel safe",
+          "How she values “us” as a team",
+          "Her patience",
+          "The peace she brings into my life"
         ],
         "tolerate": [
-          "Different sleep schedules",
-          "Group chat notifications at night"
+          "The way she hides her pain instead of sharing it",
+          "Her tendency to protect me by hiding her stress"
         ],
-        "hate": [
-          "(Keep empty or use for “raw notes” you both agree to revisit)"
-        ]
-      },
-      "bucketLog": [
-        {
-          "date": "2026-03-15",
-          "text": "Shifted “forgot to text back once” from Hate → Tolerate after we talked it through."
-        },
-        {
-          "date": "2026-03-09",
-          "text": "Added to Love: “You listened without fixing — that meant a lot.”"
-        }
-      ]
+        "hate": ["NA — I Love you jaan"]
+      }
     },
     {
       "id": "purva",
       "displayName": "Purva",
-      "subtitle": "How Divy sees Purva’s love meter",
-      "currentPercent": 91,
-      "chartNote": "Same format as Divy — your story, your milestones.",
-      "history": [
-        { "date": "2025-11-01", "percent": 75, "label": "Start of chart" },
-        { "date": "2026-01-01", "percent": 82, "label": "New year reset" },
-        { "date": "2026-03-09", "percent": 98, "label": "Same milestone day — both felt it" },
-        { "date": "2026-03-29", "percent": 91, "label": "Today" }
-      ],
+      "subtitle": "Coming soon — we’ll add her chart and buckets when she’s ready.",
+      "currentPercent": null,
+      "history": [],
       "buckets": {
-        "love": [
-          "Your patience with my chaos",
-          "The way you plan little surprises",
-          "Honesty even when it’s awkward"
-        ],
-        "tolerate": [
-          "When work runs late",
-          "Different approaches to tidiness"
-        ],
+        "love": [],
+        "tolerate": [],
         "hate": []
-      },
-      "bucketLog": [
-        {
-          "date": "2026-03-22",
-          "text": "Added to Love: “You defended us as a team in front of family.”"
-        }
-      ]
+      }
     }
   ]
 }

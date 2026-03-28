@@ -1,11 +1,8 @@
 /**
- * DiVa — static love chart with hash routes and localStorage (no backend).
- * #       → landing
- * #divy   → Divy portal
- * #purva  → Purva portal
+ * DiVa — static love chart. Data only from data.json (read-only, no localStorage).
  */
 
-const STORAGE_KEY = "diVa_loveChart_v2";
+const LEGACY_STORAGE_KEY = "diVa_loveChart_v2";
 const CHART_WINDOW_DAYS = 30;
 
 const CHART_COLORS = {
@@ -28,31 +25,12 @@ function formatShortDate(s) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-function ymd(d) {
-  const x = new Date(d);
-  const y = x.getFullYear();
-  const m = String(x.getMonth() + 1).padStart(2, "0");
-  const day = String(x.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
 function escapeHtml(s) {
   const div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
 }
 
-/** Parse love-meter input: any finite number (no 0–100 restriction). */
-function parseLoveValue(raw) {
-  const s = String(raw ?? "")
-    .trim()
-    .replace(/,/g, "");
-  if (s === "") return NaN;
-  const n = Number(s);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-/** Y-axis range from data with padding so the line breathes. */
 function computeYScaleBounds(values) {
   const nums = values.filter((x) => typeof x === "number" && Number.isFinite(x));
   if (!nums.length) return { min: 0, max: 100 };
@@ -85,58 +63,23 @@ function filterHistoryLastDays(history, days) {
     .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 }
 
-function loadStored() {
+function clearLegacyStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch {
-    return null;
+    /* ignore */
   }
-}
-
-function saveState() {
-  if (!appState) return;
-  appState.updated = ymd(new Date());
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-  } catch (e) {
-    console.warn("Could not save to localStorage", e);
-  }
-}
-
-function mergePeopleFromStored(basePeople, storedPeople) {
-  if (!storedPeople || !Array.isArray(storedPeople)) return basePeople;
-  const byId = {};
-  storedPeople.forEach((p) => {
-    if (p && p.id) byId[p.id] = p;
-  });
-  return basePeople.map((base) => {
-    const s = byId[base.id];
-    if (!s) return { ...base, history: [...(base.history || [])], buckets: { ...base.buckets }, bucketLog: [...(base.bucketLog || [])] };
-    return {
-      ...base,
-      ...s,
-      history: Array.isArray(s.history) ? [...s.history] : [...(base.history || [])],
-      buckets: {
-        love: [...(s.buckets?.love ?? base.buckets?.love ?? [])],
-        tolerate: [...(s.buckets?.tolerate ?? base.buckets?.tolerate ?? [])],
-        hate: [...(s.buckets?.hate ?? base.buckets?.hate ?? [])],
-      },
-      bucketLog: Array.isArray(s.bucketLog) ? [...s.bucketLog] : [...(base.bucketLog || [])],
-    };
-  });
 }
 
 async function loadApp() {
   const res = await fetch("data.json", { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const base = await res.json();
-  const stored = loadStored();
-  const people = mergePeopleFromStored(base.people || [], stored?.people);
+  clearLegacyStorage();
+  const people = base.people || [];
   people.forEach(sortHistory);
   appState = {
-    updated: stored?.updated || base.updated,
+    updated: base.updated,
     people,
   };
 }
@@ -172,7 +115,6 @@ function buildPortalChart(canvas, person) {
   });
 
   const yBounds = computeYScaleBounds(data);
-
   const isMilestone = (i) => milestoneIndices.includes(i);
 
   portalChart = new Chart(canvas, {
@@ -261,87 +203,10 @@ function renderBucketsDisplay(container, person) {
       return `
         <div class="bucket ${cls}">
           <h3>${title}</h3>
-          <ul>${lis || "<li><em style='opacity:0.55'>Nothing listed yet</em></li>"}</ul>
+          <ul>${lis || "<li><em style='opacity:0.55'>Nothing here yet</em></li>"}</ul>
         </div>`;
     })
     .join("");
-}
-
-function renderBucketEditor(container, person) {
-  const order = [
-    { key: "love", cls: "love", title: "Love" },
-    { key: "tolerate", cls: "tolerate", title: "Tolerate" },
-    { key: "hate", cls: "hate", title: "Hate" },
-  ];
-  container.innerHTML = order
-    .map(({ key, cls, title }) => {
-      const items = person.buckets[key] || [];
-      const rows = items
-        .map(
-          (text, idx) => `
-        <div class="bucket-item-row" data-bucket="${key}" data-idx="${idx}">
-          <span>${escapeHtml(text)}</span>
-          <button type="button" class="btn-icon btn-remove-bucket" aria-label="Remove">×</button>
-        </div>`
-        )
-        .join("");
-      return `
-        <div class="bucket-edit ${cls}">
-          <h3>${title}</h3>
-          ${rows || "<p style='opacity:0.5;font-size:0.85rem;margin:0'>No items</p>"}
-          <div class="add-row">
-            <input type="text" class="input bucket-new-input" data-bucket="${key}" placeholder="Add something…" />
-            <button type="button" class="btn btn-secondary btn-add-bucket" data-bucket="${key}" style="width:auto;min-width:72px;padding:0 1rem">Add</button>
-          </div>
-        </div>`;
-    })
-    .join("");
-}
-
-function renderLog(container, entries) {
-  if (!entries || !entries.length) {
-    container.innerHTML = "<p style='color:var(--muted);font-size:0.85rem;margin:0'>No notes yet.</p>";
-    return;
-  }
-  const sorted = [...entries].sort((a, b) => parseDate(b.date) - parseDate(a.date));
-  container.innerHTML = sorted
-    .map(
-      (e) => `
-      <div class="log-item">
-        <time>${formatShortDate(e.date)}</time>
-        ${escapeHtml(e.text)}
-      </div>`
-    )
-    .join("");
-}
-
-function renderHistoryManage(listEl, person) {
-  const hist = filterHistoryLastDays(person.history, CHART_WINDOW_DAYS);
-  if (!hist.length) {
-    listEl.innerHTML = "<li style='color:var(--muted);font-size:0.8rem'>No points in this window yet.</li>";
-    return;
-  }
-  listEl.innerHTML = hist
-    .map((h) => {
-      const encLabel = encodeURIComponent(h.label || "");
-      return `
-      <li class="history-li">
-        <div class="history-li-meta">
-          <strong>${escapeHtml(String(h.percent))}</strong> · ${formatShortDate(h.date)}
-          ${h.label ? `<div style="margin-top:0.2rem;opacity:0.9">${escapeHtml(h.label)}</div>` : ""}
-        </div>
-        <button type="button" class="btn-icon btn-remove-history" data-date="${escapeHtml(h.date)}" data-percent="${h.percent}" data-enc-label="${encLabel}" aria-label="Remove point">×</button>
-      </li>`;
-    })
-    .join("");
-}
-
-function removeHistoryPoint(person, date, percent, label) {
-  const p = Number(percent);
-  const idx = person.history.findIndex(
-    (h) => h.date === date && Number(h.percent) === p && (h.label || "") === (label || "")
-  );
-  if (idx >= 0) person.history.splice(idx, 1);
 }
 
 function refreshPortalUI() {
@@ -350,20 +215,14 @@ function refreshPortalUI() {
 
   const cur = person.currentPercent;
   document.getElementById("portal-pct").textContent =
-    cur !== undefined && cur !== null && Number.isFinite(Number(cur)) ? String(cur) : "—";
+    cur !== undefined && cur !== null && String(cur) !== "" && Number.isFinite(Number(cur))
+      ? String(cur)
+      : "—";
 
   const canvas = document.getElementById("portal-chart");
   buildPortalChart(canvas, person);
 
   renderBucketsDisplay(document.getElementById("buckets-display"), person);
-
-  const editOpen = document.getElementById("buckets-edit");
-  if (!editOpen.hidden) {
-    renderBucketEditor(editOpen, person);
-  }
-
-  renderLog(document.getElementById("portal-log"), person.bucketLog || []);
-  renderHistoryManage(document.getElementById("history-list"), person);
 }
 
 function showLanding() {
@@ -387,23 +246,6 @@ function showPortal(personId) {
   document.getElementById("portal-title").textContent = person.displayName;
   document.getElementById("portal-sub").textContent = person.subtitle || "";
 
-  document.getElementById("panel-meter").hidden = true;
-  document.getElementById("btn-toggle-meter").setAttribute("aria-expanded", "false");
-  document.getElementById("buckets-edit").hidden = true;
-  document.getElementById("btn-toggle-buckets").setAttribute("aria-expanded", "false");
-  document.getElementById("buckets-display").hidden = false;
-  document.getElementById("panel-log").hidden = true;
-  document.getElementById("btn-toggle-log").setAttribute("aria-expanded", "false");
-
-  const today = ymd(new Date());
-  document.getElementById("input-current-pct").value = person.currentPercent ?? "";
-  document.getElementById("input-today-label").value = "";
-  document.getElementById("input-pt-date").value = today;
-  document.getElementById("input-pt-pct").value = "";
-  document.getElementById("input-pt-label").value = "";
-  document.getElementById("input-log-date").value = today;
-  document.getElementById("input-log-text").value = "";
-
   refreshPortalUI();
 }
 
@@ -420,144 +262,6 @@ function setupPortalHandlers() {
   document.getElementById("portal-back").addEventListener("click", (e) => {
     e.preventDefault();
     location.hash = "";
-  });
-
-  document.getElementById("btn-toggle-meter").addEventListener("click", () => {
-    const p = document.getElementById("panel-meter");
-    const btn = document.getElementById("btn-toggle-meter");
-    const open = p.hidden;
-    p.hidden = !open;
-    btn.setAttribute("aria-expanded", String(open));
-  });
-
-  document.getElementById("btn-save-today").addEventListener("click", () => {
-    const person = getPerson(activePersonId);
-    if (!person) return;
-    const pct = parseLoveValue(document.getElementById("input-current-pct").value);
-    if (Number.isNaN(pct)) {
-      alert("Enter a valid number for the love meter.");
-      return;
-    }
-    const label = document.getElementById("input-today-label").value.trim();
-    const date = ymd(new Date());
-    person.currentPercent = pct;
-    person.history = person.history.filter((h) => h.date !== date);
-    person.history.push({ date, percent: pct, label: label || undefined });
-    sortHistory(person);
-    saveState();
-    refreshPortalUI();
-  });
-
-  document.getElementById("btn-add-point").addEventListener("click", () => {
-    const person = getPerson(activePersonId);
-    if (!person) return;
-    const date = document.getElementById("input-pt-date").value;
-    const pct = parseLoveValue(document.getElementById("input-pt-pct").value);
-    const label = document.getElementById("input-pt-label").value.trim();
-    if (!date) {
-      alert("Pick a date.");
-      return;
-    }
-    if (Number.isNaN(pct)) {
-      alert("Enter a valid number.");
-      return;
-    }
-    person.history.push({ date, percent: pct, label: label || undefined });
-    sortHistory(person);
-    const last = person.history[person.history.length - 1];
-    if (parseDate(last.date) >= parseDate(date)) person.currentPercent = last.percent;
-    saveState();
-    refreshPortalUI();
-  });
-
-  document.getElementById("history-list").addEventListener("click", (e) => {
-    const btn = e.target.closest(".btn-remove-history");
-    if (!btn) return;
-    const person = getPerson(activePersonId);
-    if (!person) return;
-    const date = btn.getAttribute("data-date");
-    const percent = Number(btn.getAttribute("data-percent"));
-    const enc = btn.getAttribute("data-enc-label") || "";
-    let label = "";
-    try {
-      label = decodeURIComponent(enc);
-    } catch {
-      label = "";
-    }
-    if (!date || Number.isNaN(percent)) return;
-    removeHistoryPoint(person, date, percent, label);
-    saveState();
-    refreshPortalUI();
-  });
-
-  document.getElementById("btn-toggle-buckets").addEventListener("click", () => {
-    const edit = document.getElementById("buckets-edit");
-    const disp = document.getElementById("buckets-display");
-    const btn = document.getElementById("btn-toggle-buckets");
-    const open = edit.hidden;
-    edit.hidden = !open;
-    disp.hidden = open;
-    btn.setAttribute("aria-expanded", String(open));
-    if (open) {
-      const person = getPerson(activePersonId);
-      if (person) renderBucketEditor(edit, person);
-    } else refreshPortalUI();
-  });
-
-  document.getElementById("buckets-edit").addEventListener("click", (e) => {
-    const rm = e.target.closest(".btn-remove-bucket");
-    if (rm) {
-      const row = rm.closest(".bucket-item-row");
-      const bucket = row?.dataset.bucket;
-      const idx = Number(row?.dataset.idx);
-      const person = getPerson(activePersonId);
-      if (!person || !bucket || Number.isNaN(idx)) return;
-      person.buckets[bucket].splice(idx, 1);
-      saveState();
-      renderBucketEditor(document.getElementById("buckets-edit"), person);
-      renderBucketsDisplay(document.getElementById("buckets-display"), person);
-      return;
-    }
-    const add = e.target.closest(".btn-add-bucket");
-    if (add) {
-      const bucket = add.dataset.bucket;
-      const person = getPerson(activePersonId);
-      if (!person || !bucket) return;
-      const wrap = add.closest(".bucket-edit");
-      const input = wrap?.querySelector(`.bucket-new-input[data-bucket="${bucket}"]`);
-      const text = (input?.value || "").trim();
-      if (!text) return;
-      if (!person.buckets[bucket]) person.buckets[bucket] = [];
-      person.buckets[bucket].push(text);
-      input.value = "";
-      saveState();
-      renderBucketEditor(document.getElementById("buckets-edit"), person);
-      renderBucketsDisplay(document.getElementById("buckets-display"), person);
-    }
-  });
-
-  document.getElementById("btn-toggle-log").addEventListener("click", () => {
-    const p = document.getElementById("panel-log");
-    const btn = document.getElementById("btn-toggle-log");
-    const open = p.hidden;
-    p.hidden = !open;
-    btn.setAttribute("aria-expanded", String(open));
-  });
-
-  document.getElementById("btn-add-log").addEventListener("click", () => {
-    const person = getPerson(activePersonId);
-    if (!person) return;
-    const date = document.getElementById("input-log-date").value;
-    const text = document.getElementById("input-log-text").value.trim();
-    if (!date || !text) {
-      alert("Add a date and what changed.");
-      return;
-    }
-    if (!person.bucketLog) person.bucketLog = [];
-    person.bucketLog.push({ date, text });
-    document.getElementById("input-log-text").value = "";
-    saveState();
-    renderLog(document.getElementById("portal-log"), person.bucketLog);
   });
 }
 

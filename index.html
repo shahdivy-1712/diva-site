@@ -24,14 +24,70 @@
 
       <!-- Landing -->
       <section id="view-landing" class="view view-landing" hidden>
+        <div class="landing-atmosphere" aria-hidden="true">
+          <span class="mote"></span>
+          <span class="mote"></span>
+          <span class="mote"></span>
+          <span class="mote"></span>
+          <span class="mote"></span>
+          <span class="mote"></span>
+          <span class="mote"></span>
+        </div>
+
         <header class="landing-header">
           <p class="landing-eyebrow">Our little corner</p>
-          <h1 class="monogram" aria-label="DiVa">DiVa</h1>
+          <div class="monogram-block">
+            <h1 class="monogram" aria-label="DiVa">
+              <span class="monogram-d">D</span><span class="monogram-i">i</span><span class="monogram-va">Va</span>
+            </h1>
+          </div>
+
+          <div class="landing-ornament" aria-hidden="true">
+            <svg class="landing-ornament__svg" viewBox="0 0 320 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="orn-stroke" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#f0668e" stop-opacity="0" />
+                  <stop offset="0.35" stop-color="#e8b4a0" stop-opacity="0.9" />
+                  <stop offset="0.5" stop-color="#ff8fb8" stop-opacity="1" />
+                  <stop offset="0.65" stop-color="#e8b4a0" stop-opacity="0.9" />
+                  <stop offset="1" stop-color="#f0668e" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path
+                class="landing-ornament__curve landing-ornament__curve--l"
+                d="M8 20 Q 72 4, 136 16"
+                stroke="url(#orn-stroke)"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
+              <path
+                class="landing-ornament__curve landing-ornament__curve--r"
+                d="M312 20 Q 248 4, 184 16"
+                stroke="url(#orn-stroke)"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
+              <text
+                class="landing-ornament__heart"
+                x="160"
+                y="20"
+                text-anchor="middle"
+                dominant-baseline="central"
+                fill="rgba(240, 102, 142, 0.75)"
+                font-size="14"
+                font-family='Georgia, "Times New Roman", serif'
+              >
+                ♥
+              </text>
+            </svg>
+          </div>
+
           <p class="landing-tagline" aria-label="Divy loves Purva">
             <span class="name-highlight">Di</span>vy
             <span class="tagline-heart" aria-hidden="true"> ♥ </span>
             Pur<span class="name-highlight">va</span>
           </p>
+          <p class="landing-quote">This little corner of the internet — just for us.</p>
           <p class="landing-hint">Tap your name to open your portal.</p>
         </header>
 
@@ -73,10 +129,9 @@
             <span class="avatar-name">Purva</span>
           </a>
         </div>
-
       </section>
 
-      <!-- Person portal -->
+      <!-- Person portal (read-only; data from data.json) -->
       <section id="view-portal" class="view view-portal" hidden>
         <header class="portal-top">
           <a href="#" class="back-link" id="portal-back">← DiVa home</a>
@@ -90,46 +145,6 @@
               <span class="pct" id="portal-pct">—</span>
               <span class="lbl">love meter (playful)</span>
             </div>
-            <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-meter" aria-expanded="false">
-              Update meter
-            </button>
-          </div>
-
-          <div id="panel-meter" class="edit-panel" hidden>
-            <p class="panel-intro">Set today’s feeling and optional note — adds a point on the chart.</p>
-            <div class="form-row">
-              <label class="form-label" for="input-current-pct">Love meter (any number you like)</label>
-              <input type="number" id="input-current-pct" step="any" class="input" placeholder="e.g. 88, 100, 142" />
-            </div>
-            <div class="form-row">
-              <label class="form-label" for="input-today-label">Milestone / note (optional)</label>
-              <input type="text" id="input-today-label" class="input" placeholder="e.g. Best date night" />
-            </div>
-            <button type="button" class="btn btn-primary" id="btn-save-today">Save for today</button>
-
-            <hr class="divider" />
-
-            <p class="panel-intro">Add a point for any past date.</p>
-            <div class="form-row form-row--2">
-              <div>
-                <label class="form-label" for="input-pt-date">Date</label>
-                <input type="date" id="input-pt-date" class="input" />
-              </div>
-              <div>
-                <label class="form-label" for="input-pt-pct">Value</label>
-                <input type="number" id="input-pt-pct" step="any" class="input" placeholder="Any number" />
-              </div>
-            </div>
-            <div class="form-row">
-              <label class="form-label" for="input-pt-label">Milestone label</label>
-              <input type="text" id="input-pt-label" class="input" placeholder="What happened?" />
-            </div>
-            <button type="button" class="btn btn-secondary" id="btn-add-point">Add milestone</button>
-
-            <div class="history-manage">
-              <h4 class="history-manage-title">Last 30 days on chart</h4>
-              <ul id="history-list" class="history-list"></ul>
-            </div>
           </div>
 
           <div class="chart-section-head">
@@ -137,39 +152,14 @@
             <p class="section-sub">Past 30 days · smooth line · gold-ring dots = milestones</p>
           </div>
           <div class="chart-wrap chart-wrap--tall">
-            <p id="chart-empty" class="chart-empty" hidden>No love % points in the last 30 days yet. Add one below.</p>
-            <canvas id="portal-chart" aria-label="Love percent last 30 days"></canvas>
+            <p id="chart-empty" class="chart-empty" hidden>No points in the last 30 days yet.</p>
+            <canvas id="portal-chart" aria-label="Love meter last 30 days"></canvas>
           </div>
 
-          <div class="card-head bucket-section-head">
+          <div class="card-head bucket-section-head bucket-section-head--simple">
             <h3 class="section-title">Buckets</h3>
-            <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-buckets" aria-expanded="false">
-              Edit lists
-            </button>
           </div>
           <div id="buckets-display" class="buckets"></div>
-          <div id="buckets-edit" class="buckets-edit" hidden></div>
-
-          <div class="log-section">
-            <div class="log-head">
-              <h4>Bucket changes</h4>
-              <button type="button" class="btn btn-ghost btn-small" id="btn-toggle-log" aria-expanded="false">
-                Add note
-              </button>
-            </div>
-            <div id="panel-log" class="edit-panel edit-panel--compact" hidden>
-              <div class="form-row">
-                <label class="form-label" for="input-log-date">Date</label>
-                <input type="date" id="input-log-date" class="input" />
-              </div>
-              <div class="form-row">
-                <label class="form-label" for="input-log-text">What shifted?</label>
-                <textarea id="input-log-text" class="input input-textarea" rows="2" placeholder="e.g. Moved X from hate → tolerate"></textarea>
-              </div>
-              <button type="button" class="btn btn-primary" id="btn-add-log">Save note</button>
-            </div>
-            <div class="log-list" id="portal-log"></div>
-          </div>
         </article>
       </section>
 
